@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 
 import com.max.project.manager.beans.SimpleProject;
 import com.max.project.manager.beans.interfaces.Project;
-import com.max.project.manager.utils.SqlUtil;
+import com.max.project.manager.utils.RowMapperUtil;
 
 @Component("projectDao")
 public class ProjectDao {
@@ -26,13 +26,13 @@ public class ProjectDao {
 	
 	public List<Project> get() {
 		List<Project> projects = null;
-		projects = dataSource.query("SELECT * FROM project", SqlUtil.getSimpleProjectRowMapper());
+		projects = dataSource.query("SELECT * FROM project", RowMapperUtil.getSimpleProjectRowMapper());
 		return projects;
 	}
 	
 	public Project get(long id) {
 		MapSqlParameterSource param = new MapSqlParameterSource("id", id);
-		return (Project) dataSource.queryForObject("SELECT * FROM project WHERE idProject = :id", param, SqlUtil.getSimpleProjectRowMapper());
+		return (Project) dataSource.queryForObject("SELECT * FROM project WHERE idProject = :id", param, RowMapperUtil.getSimpleProjectRowMapper());
 	}
 	
 	public boolean delete(long id) {

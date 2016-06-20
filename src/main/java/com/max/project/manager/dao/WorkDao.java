@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.max.project.manager.beans.AtomicJob;
 import com.max.project.manager.beans.interfaces.Work;
-import com.max.project.manager.utils.SqlUtil;
+import com.max.project.manager.utils.RowMapperUtil;
 
 @Component("workDao")
 public class WorkDao {
@@ -29,21 +29,17 @@ public class WorkDao {
 	}
 
 	public List<Work> get() {
-		List<Work> works = null;
-		works = dataSource.query("SELECT * FROM work", SqlUtil.getAtomicJobRowMapper());
-		return works;
+		return dataSource.query("SELECT * FROM work", RowMapperUtil.getAtomicJobRowMapper());
 	}
 	
-	public List<Work> getWhereProject(long id) {
-		List<Work> works = null;
+	public List<Work> getProject(long id) {
 		MapSqlParameterSource param = new MapSqlParameterSource("id", id);
-		works = dataSource.query("SELECT * FROM work WHERE Project_idProject = :id", param, SqlUtil.getAtomicJobRowMapper());
-		return works;
+		return dataSource.query("SELECT * FROM work WHERE Project_idProject = :id", param, RowMapperUtil.getAtomicJobRowMapper());
 	}
 	
 	public Work get(int id) {
 		MapSqlParameterSource param = new MapSqlParameterSource("id", id);
-		return dataSource.queryForObject("SELECT * FROM work WHERE idWork = :id", param, SqlUtil.getAtomicJobRowMapper());
+		return dataSource.queryForObject("SELECT * FROM work WHERE idWork = :id", param, RowMapperUtil.getAtomicJobRowMapper());
 	}
 	
 	public boolean delete(int id) {
@@ -64,18 +60,18 @@ public class WorkDao {
 	}
 	
 	public boolean update(Work work) {
-		BeanPropertySqlParameterSource params;
+		BeanPropertySqlParameterSource params = null;
 		if (work instanceof AtomicJob) {
 			params = new BeanPropertySqlParameterSource(work);
-			return dataSource.update("UPDATE work SET Customer_idCustomer = :customerId, name = :name, description = :description,"
+			return dataSource.update("UPDATE work SET name = :name, description = :description,"
 					+ "startDate = :dateOfStart, endDate = :dateOfEnd, comments = :comments, isFinished = :finished, isCanceled = :canceled,"
-					+ "unitWorth = :unitWorth, numUnits = :numOfUnits, Project_idProject = :projectId) WHERE idWork = :id", params) == 1;
+					+ "unitWorth = :unitWorth, numUnits = :numOfUnits, Project_idProject = :projectId WHERE idWork = :id", params) == 1;
 		}
 		return false;
 	}
 
 	// this will not work if the parameters will differ. only works for AtomicJob
-	@Transactional(propagation=Propagation.MANDATORY)
+	@Transactional(propagation=Propagation.REQUIRED)
 	public int[] create(List<Work> works) {
 		
 		SqlParameterSource[] params = SqlParameterSourceUtils.createBatch(works.toArray());
@@ -86,11 +82,11 @@ public class WorkDao {
 					+ ":unitWorth, :numOfUnits, :projectId)", params);
 	}
 	
-	@Transactional(propagation=Propagation.MANDATORY)
+	@Transactional(propagation=Propagation.REQUIRED)
 	public int[] update(List<Work> works) {
 		SqlParameterSource[] params = SqlParameterSourceUtils.createBatch(works.toArray());
 		return dataSource.batchUpdate("UPDATE work SET Customer_idCustomer = :customerId, name = :name, description = :description,"
 					+ "startDate = :dateOfStart, endDate = :dateOfEnd, comments = :comments, isFinished = :finished, isCanceled = :canceled,"
-					+ "unitWorth = :unitWorth, numUnits = :numOfUnits, Project_idProject = :projectId) WHERE idWork = :id", params);
+					+ "unitWorth = :unitWorth, numUnits = :numOfUnits, Project_idProject = :projectId WHERE idWork = :id", params);
 	}
 }
